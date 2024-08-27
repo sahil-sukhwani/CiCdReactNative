@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
+  Alert,
   Button,
   SafeAreaView,
   StyleSheet,
@@ -8,7 +9,8 @@ import {
   View,
 } from 'react-native';
 
-import Crashes from 'appcenter-crashes';
+import Crashes, { hasCrashedInLastSession } from 'appcenter-crashes';
+import Analytics from 'appcenter-analytics'
 
 import {
   Colors,
@@ -22,9 +24,22 @@ function App(): React.JSX.Element {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
+  useEffect(() => {
+    async function hasCrashedInLastSession() {
+      const didCrashed = await Crashes.hasCrashedInLastSession();
+      console.log('Crash in last session: ', didCrashed);
+      if(didCrashed) {
+        Alert.alert('Sorry about the crash, we are working on the fix');
+      }
+    }
+    
+    hasCrashedInLastSession()
+  },[])
+
   return (
     <SafeAreaView style={backgroundStyle}>
-      <Button title="Crash me" onPress={() =>  Crashes.generateTestCrash()} />
+      {/* <Button title="Crash me" onPress={() =>  Crashes.generateTestCrash()} /> */}
+      <Button title="Send custom event" onPress={() => Analytics.trackEvent("track_event") } />
     </SafeAreaView>
   );
 }
