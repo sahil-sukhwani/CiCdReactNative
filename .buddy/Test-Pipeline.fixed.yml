@@ -4,3 +4,13 @@
     refs:
     - "refs/heads/main"
   fail_on_prepare_env_warning: true
+  actions:
+  - action: "npx react-native run-ios --configuration Release"
+    type: "NATIVE_BUILD_MAC_REACT"
+    commands:
+    - "npx react-native run-ios --configuration Release"
+    shell: "BASH"
+    pre_start_simulators:
+    - "iPhone 15 Pro"
+    node_version: "18"
+    xcode_version: "15.4.0"
