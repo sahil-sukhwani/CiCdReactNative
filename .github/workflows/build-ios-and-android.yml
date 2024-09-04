@@ -29,19 +29,26 @@ jobs:
           key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-pods-
-      
-      - name: Setup Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
 
       - run: yarn install --frozen-lockfile
 
       - run: pod install
         working-directory: ios
 
-      - run: xcodebuild clean archive -workspace appCiCd.xcworkspace -scheme appCiCd -archivePath appCiCd.xcarchive CODE_SIGNING_ALLOWED=NO | xcpretty
+      # Archive the app
+      - run: xcodebuild clean archive -workspace testCiCdReactNative.xcworkspace -scheme testCiCdReactNative -archivePath testCiCdReactNative.xcarchive CODE_SIGNING_ALLOWED=NO | xcpretty
         working-directory: ios
+
+      # Export the archive to an IPA file
+      - run: xcodebuild -exportArchive -archivePath testCiCdReactNative.xcarchive -exportOptionsPlist ios/exportOptions.plist -exportPath ./build
+        working-directory: ios
+
+      # Upload the IPA file as an artifact
+      - name: Upload IPA
+        uses: actions/upload-artifact@v1
+        with:
+          name: Ipa
+          path: ios/build/*.ipa
 
   build-android:
     runs-on: ubuntu-latest
@@ -63,11 +70,6 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
-      
-      - name: Setup Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
 
       # Yarn Cache: https://github.com/actions/cache/blob/master/examples.md#node---yarn
       - name: Get yarn cache directory path
@@ -88,15 +90,13 @@ jobs:
         run: cd android && ./gradlew bundleRelease assembleRelease
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v1
         with:
           name: Apk
           path: android/app/build/outputs/apk/release/app-release.apk
-          retention-days: 10
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v1
         with:
           name: Aab
           path: android/app/build/outputs/bundle/release/app-release.aab
-          retention-days: 10
