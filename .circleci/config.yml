@@ -3,16 +3,16 @@ version: 2.1
 executors:
   ios-executor:
     macos:
-      xcode: "14.0.0" # Or use the latest version available
+      xcode: "14.0.0" # Update this to the latest version or the one you need
   android-executor:
     docker:
-      - image: circleci/android:2022.04.1
+      - image: circleci/android:api-31-node # Valid CircleCI Android image with Node.js preinstalled
 
 jobs:
   build-ios:
     executor: ios-executor
     steps:
-      - checkout
+      - checkout # Ensure the repository is cloned correctly
 
       - restore_cache:
           keys:
@@ -51,7 +51,7 @@ jobs:
   build-android:
     executor: android-executor
     steps:
-      - checkout
+      - checkout # Ensure the repository is cloned correctly
 
       - restore_cache:
           keys:
@@ -62,6 +62,12 @@ jobs:
           keys:
             - v1-yarn-{{ checksum "yarn.lock" }}
             - v1-yarn-
+
+      - run:
+          name: Install Node.js 18.18.0 # Install correct Node.js version
+          command: |
+            curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+            sudo apt-get install -y nodejs
 
       - run:
           name: Install node dependencies
